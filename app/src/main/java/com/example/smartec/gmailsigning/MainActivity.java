@@ -11,6 +11,12 @@ import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -19,14 +25,19 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Arrays;
+
+import static android.provider.ContactsContract.Intents.Insert.EMAIL;
+
 public class MainActivity extends AppCompatActivity {
+    private static final String EMAIL = "email";
+    CallbackManager callbackManager;
     @BindView(R.id.mailid)
     public EditText email;
     @BindView(R.id.passwordid)
     public EditText password;
-
-    public EditText imgUser;
-
+    @BindView(R.id.login_button)
+    public LoginButton Fbutton;
     GoogleSignInClient mGoogleSignInClient;
     int RC_SIGN_IN = 33;
 
@@ -44,6 +55,27 @@ public class MainActivity extends AppCompatActivity {
         //updateUI(account);
         SignInButton signInButton = findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
+        Fbutton.setReadPermissions(Arrays.asList(EMAIL));
+        callbackManager = CallbackManager.Factory.create();
+        Fbutton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Toast.makeText(MainActivity.this, "sucess", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancel() {
+                Toast.makeText(MainActivity.this, "Cancel", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        callbackManager.onActivityResult(requestCode, resultCode, data);
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             // The Task returned from this call is always completed, no need to attach
@@ -89,4 +121,5 @@ public class MainActivity extends AppCompatActivity {
         email.setText(account.getEmail());
         password.setText(account.getId());
     }
+
 }
